@@ -2,11 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Project } from './projects.controller';
 import { Model } from 'mongoose';
-
-export interface CreateProjectDto {
-    name: string;
-    description?: string;
-}
+import { CreateProjectDto } from './models/create-project-dto';
 
 @Injectable()
 export class ProjectsService {

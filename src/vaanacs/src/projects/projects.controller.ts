@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
-import { ProjectsService, CreateProjectDto } from './projects.service';
+import { ProjectsService } from './projects.service';
+import { CreateProjectDto } from './models/create-project-dto';
 
 export interface Project {
   name: string;
