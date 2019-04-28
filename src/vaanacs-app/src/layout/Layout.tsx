@@ -3,21 +3,19 @@ import { Route } from "react-router";
 import { Home } from "../pages/home/Home";
 import { Projects } from "../pages/projects/Projects";
 import { Link } from "react-router-dom";
+import { Layout } from 'antd';
+import { Header } from './Header';
 
-export function AppLayout () { 
+export function AppLayout() {
     return (
-        <>
-            <h1>vaanacs</h1>
-            <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/projects/">Projects</Link>
-            </li>
-          </ul>
-            <Route path="/" exact component={Home} />
-            <Route path="/projects/" component={Projects} />
-        </>
+        <Layout className="layout">
+            <Layout.Header style={{ backgroundColor: 'white' }}>
+                <Header />
+            </Layout.Header>
+            <Layout.Content style={{ padding: '0 50px' }}>
+                <Route path="/" exact component={Home} />
+                <Route path="/projects/" component={Projects} />
+            </Layout.Content>
+        </Layout>
     )
 }
