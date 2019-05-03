@@ -1,10 +1,10 @@
 import React from 'react';
-import { Route } from "react-router";
+import { Route, Switch } from "react-router";
 import { Home } from "../pages/home/Home";
 import { Projects } from "../pages/projects/Projects";
-import { Link } from "react-router-dom";
 import { Layout } from 'antd';
 import { Header } from './Header';
+import { ProjectView } from '../pages/projects/ProjectView';
 
 export function AppLayout() {
     return (
@@ -12,9 +12,15 @@ export function AppLayout() {
             <Layout.Header style={{ backgroundColor: 'white' }}>
                 <Header />
             </Layout.Header>
-            <Layout.Content style={{ padding: '0 50px' }}>
+            <Layout.Content style={{ padding: '2rem' }}>
                 <Route path="/" exact component={Home} />
-                <Route path="/projects/" component={Projects} />
+
+                <Switch>
+                    <Route path="/projects" exact component={Projects}/>    
+                    <Route path="/projects/:id" component={ProjectView} />
+                </Switch>
+
+                
             </Layout.Content>
         </Layout>
     )
