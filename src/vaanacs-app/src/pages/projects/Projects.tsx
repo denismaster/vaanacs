@@ -1,14 +1,21 @@
 import React from 'react';
-import { Card } from 'antd';
+import { Card, Button, PageHeader, Typography, Icon } from 'antd';
 import { ProjectsList } from './components/ProjectsList';
 
-import { Typography } from 'antd';
-const { Title } = Typography;
+const { Text } = Typography;
 
 export function Projects() {
     return (
         <div>
-            <Title level={3}>Проекты</Title>
+            <PageHeader
+                title={<Text>Проекты</Text>}
+                extra={[
+                    <Button type="primary">
+                        <Icon type="plus" /> Создать проект
+                    </Button>
+                ]}
+            >
+            </PageHeader>
             <Card>
                 <ProjectsList />
             </Card>

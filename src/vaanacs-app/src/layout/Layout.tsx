@@ -12,15 +12,12 @@ export function AppLayout() {
             <Layout.Header style={{ backgroundColor: 'white' }}>
                 <Header />
             </Layout.Header>
-            <Layout.Content style={{ padding: '2rem' }}>
+            <Layout.Content>
                 <Route path="/" exact component={Home} />
-
                 <Switch>
                     <Route path="/projects" exact component={Projects}/>    
                     <Route path="/projects/:id" component={ProjectView} />
-                </Switch>
-
-                
+                </Switch>           
             </Layout.Content>
         </Layout>
     )
