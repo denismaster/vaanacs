@@ -5,6 +5,7 @@ import { RouteComponentProps } from 'react-router';
 import { EditableTagGroup } from '../../components/EditableTagGroup';
 import { apiUrl, gridGutter } from '../../constants';
 import { notification } from 'antd';
+import { ProjectViewModel } from './models/ProjectViewModel';
 const { Text, Paragraph } = Typography;
 
 const ButtonGroup = Button.Group;
@@ -14,13 +15,6 @@ interface ProjectViewRouteParams {
 }
 
 interface ProjectViewProps extends RouteComponentProps<ProjectViewRouteParams> {
-}
-
-interface ProjectViewModel {
-    name: string;
-    description: string;
-    stars: number;
-    tags: string[];
 }
 
 export function ProjectView({ match }: ProjectViewProps) {
@@ -64,10 +58,10 @@ export function ProjectView({ match }: ProjectViewProps) {
                 title={<Text editable={{ onChange: (value) => updateProject({ name: value }) }}>{project && project.name}</Text>}
                 tags={<EditableTagGroup tags={project ? project.tags : []} onChange={(t) => updateProject({ tags: t })} />}
                 extra={[
-                    <Button>
+                    <Button key="0">
                         <Icon type="setting" /> Параметры
                     </Button>,
-                    <Button>
+                    <Button key="1">
                         <Icon type="star" /> 3
                     </Button>
                 ]}
