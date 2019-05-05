@@ -68,6 +68,8 @@ export function ProjectView({ match }: ProjectViewProps) {
             >
                 <Paragraph editable={{ onChange: (value) => updateProject({ description: value }) }} >{project && project.description}</Paragraph>
             </PageHeader>
+
+            
         </Skeleton>
     )
 }
