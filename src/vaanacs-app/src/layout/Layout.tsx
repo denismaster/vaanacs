@@ -12,7 +12,7 @@ export function AppLayout() {
             <Layout.Header style={{ backgroundColor: 'white' }}>
                 <Header />
             </Layout.Header>
-            <Layout.Content>
+            <Layout.Content style={{margin:"1rem"}}>
                 <Route path="/" exact component={Home} />
                 <Switch>
                     <Route path="/projects" exact component={Projects}/>    

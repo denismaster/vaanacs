@@ -3,4 +3,9 @@ export interface ProjectViewModel {
     description: string;
     stars: number;
     tags: string[];
+
+    minAcceptableEfficiency: number;
+    criterias: {
+        name: string
+    }[]
 }

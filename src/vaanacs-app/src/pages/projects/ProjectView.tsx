@@ -1,21 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button, Icon, Skeleton, PageHeader } from 'antd';
+import React, { useEffect, useState, FC } from 'react';
+import { Col, Row, Button, Icon, Skeleton, PageHeader, Card, Collapse, Alert } from 'antd';
 import { Typography } from 'antd';
 import { RouteComponentProps } from 'react-router';
 import { EditableTagGroup } from '../../components/EditableTagGroup';
 import { apiUrl, gridGutter } from '../../constants';
 import { notification } from 'antd';
 import { ProjectViewModel } from './models/ProjectViewModel';
+import { ProjectChart } from './components/ProjectChart';
+import { ProjectParamsCard } from './components/ProjectParams';
+import { updateProjectInDb } from './api/updateProjectInDb';
 const { Text, Paragraph } = Typography;
 
-const ButtonGroup = Button.Group;
+const StyledRow: FC = ({ children }) => <Row gutter={gridGutter} style={{ marginBottom: '16px' }}>{children}</Row>
+
+interface ProjectContextProps {
+    project: ProjectViewModel | null,
+    updateProject: (patch: any) => void
+}
+
+export const ProjectContext = React.createContext<ProjectContextProps>({
+    project: null,
+    updateProject: (_) => { }
+});
 
 interface ProjectViewRouteParams {
     id: string;
 }
 
-interface ProjectViewProps extends RouteComponentProps<ProjectViewRouteParams> {
-}
+interface ProjectViewProps extends RouteComponentProps<ProjectViewRouteParams> { }
 
 export function ProjectView({ match }: ProjectViewProps) {
     const userId = match.params.id;
@@ -34,42 +46,53 @@ export function ProjectView({ match }: ProjectViewProps) {
             .finally(() => setLoading(false));
     }, []);
 
-    const updateProject = (patch: any) => fetch(`${apiUrl}/api/projects/${userId}`, {
-        method: "PATCH",
-        mode: "cors",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(patch)
-    })
-        .then(results => results.json())
+    const saveProject = (patch: any, showNotification: boolean = true) => updateProjectInDb(patch, userId)
         .then(data => setProject(data))
-        .then(_ => notification.success({
-            message: "Проект успешно обновлен"
-        }))
-        .catch(e => notification.error({
-            message: "Ошибка",
-            description: 'Не удалось обновить проект' + e.message
-        }))
+        .then(_ => {
+            if (showNotification) {
+                notification.success({
+                    message: "Проект успешно обновлен"
+                })
+            }
+        })
+
+    const updateProject = (patch: any) => setProject({ ...project, ...patch })
 
     return (
-        <Skeleton loading={loading}>
-            <PageHeader
-                title={<Text editable={{ onChange: (value) => updateProject({ name: value }) }}>{project && project.name}</Text>}
-                tags={<EditableTagGroup tags={project ? project.tags : []} onChange={(t) => updateProject({ tags: t })} />}
-                extra={[
-                    <Button key="0">
-                        <Icon type="setting" /> Параметры
-                    </Button>,
-                    <Button key="1">
-                        <Icon type="star" /> 3
-                    </Button>
-                ]}
-            >
-                <Paragraph editable={{ onChange: (value) => updateProject({ description: value }) }} >{project && project.description}</Paragraph>
-            </PageHeader>
+        <ProjectContext.Provider value={{
+            project,
+            updateProject: (patch: any) => updateProject(patch)
+        }}>
+            <Alert message="Warning" type="warning" showIcon style={{ marginBottom: '16px' }}  />
+            <StyledRow>
+                <Col>
+                    <Skeleton loading={loading}>
+                        <PageHeader
+                            title={<Text editable={{ onChange: (value) => saveProject({ name: value }) }}>{project && project.name}</Text>}
+                            tags={<EditableTagGroup tags={project ? project.tags : []} onChange={(t) => saveProject({ tags: t })} />}
+                            extra={[
+                                <Button onClick={() => saveProject(project)} type="primary" key="0">
+                                    <Icon type="save" /> Сохранить
+                                </Button>,
+                                <Button disabled key="1">
+                                    <Icon type="setting" /> Параметры
+                                </Button>,
+                            ]}
+                        >
+                            <Paragraph editable={{ onChange: (value) => saveProject({ description: value }) }} >{project && project.description}</Paragraph>
+                        </PageHeader>
 
-            
-        </Skeleton>
+                    </Skeleton>
+                </Col>
+            </StyledRow>
+            <StyledRow>
+                <Col span={12}>
+                    {project && <ProjectChart project={project} />}
+                </Col>
+                <Col span={12}>
+                    <ProjectParamsCard />
+                </Col>
+            </StyledRow>
+        </ProjectContext.Provider>
     )
 }
