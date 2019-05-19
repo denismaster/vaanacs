@@ -9,9 +9,12 @@ import { ProjectViewModel } from './models/ProjectViewModel';
 import { ProjectChart } from './components/ProjectChart';
 import { ProjectParamsCard } from './components/ProjectParams';
 import { updateProjectInDb } from './api/updateProjectInDb';
+import { debounce } from '../../core/debouncePromise';
 const { Text, Paragraph } = Typography;
 
 const StyledRow: FC = ({ children }) => <Row gutter={gridGutter} style={{ marginBottom: '16px' }}>{children}</Row>
+
+const debouncedUpdateProject = debounce(updateProjectInDb, 500);
 
 interface ProjectContextProps {
     project: ProjectViewModel | null,
@@ -46,7 +49,7 @@ export function ProjectView({ match }: ProjectViewProps) {
             .finally(() => setLoading(false));
     }, []);
 
-    const saveProject = (patch: any, showNotification: boolean = true) => updateProjectInDb(patch, userId)
+    const saveProject = (patch: any, showNotification: boolean = true) => debouncedUpdateProject(patch, userId)
         .then(data => setProject(data))
         .then(_ => {
             if (showNotification) {
@@ -56,14 +59,17 @@ export function ProjectView({ match }: ProjectViewProps) {
             }
         })
 
-    const updateProject = (patch: any) => setProject({ ...project, ...patch })
+    const updateProject = (patch: any) => {
+        setProject({ ...project, ...patch });
+        saveProject({ ...project, ...patch });
+    }
 
     return (
         <ProjectContext.Provider value={{
             project,
             updateProject: (patch: any) => updateProject(patch)
         }}>
-            <Alert message="Warning" type="warning" showIcon style={{ marginBottom: '16px' }}  />
+            {/* <Alert message="Warning" type="warning" showIcon style={{ marginBottom: '16px' }}  /> */}
             <StyledRow>
                 <Col>
                     <Skeleton loading={loading}>
@@ -86,10 +92,10 @@ export function ProjectView({ match }: ProjectViewProps) {
                 </Col>
             </StyledRow>
             <StyledRow>
-                <Col span={12}>
+                <Col span={16}>
                     {project && <ProjectChart project={project} />}
                 </Col>
-                <Col span={12}>
+                <Col span={8}>
                     <ProjectParamsCard />
                 </Col>
             </StyledRow>

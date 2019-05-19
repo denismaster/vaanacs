@@ -18,10 +18,13 @@ export const ProjectSchema = new mongoose.Schema({
     tags: [String],
     userId: { type: String, default: "" },
 
+    startTime: { type: Date, default: new Date(2018, 1, 1) },
+    endTime: { type: Date },
+    step: { type: String, default: "month"},
+
     minAcceptableEfficiency: { type: Number, default: 0 },
     criterias: [CriteriaSchema],
     convolution: { type: String, default: "additive"},
 
     calculatedData:[ValueSchema],
-    error
 });

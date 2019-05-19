@@ -36,18 +36,17 @@ export const ProjectChart: FC<ProjectChartProps> = ({ project }) => {
     <ResponsiveContainer height={400}>
       <ComposedChart
         height={250}
-        data={data}
+        data={project.calculatedData}
         margin={{
           top: 20, right: 20, bottom: 20, left: 20,
         }}
       >
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
+        <XAxis dataKey="t" name="Время" />
         <YAxis />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="pv" stroke="#8884d8" activeDot={{ r: 8 }} />
-        <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+        <Line type="monotone" dataKey="v" name="Значение" stroke="#82ca9d" />
         {project && <ReferenceLine y={project.minAcceptableEfficiency}
           label="Минимальная допустимая эффективность" stroke="red" />}
       </ComposedChart>

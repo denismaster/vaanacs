@@ -1,3 +1,20 @@
+export interface CriteriaPart {
+    type: string,
+    startTime?: number;
+    endTime?: number;
+}
+
+export interface Criteria {
+    name: string,
+    parts: CriteriaPart[],
+    weight: number;
+}
+
+export interface Value {
+    t: number;
+    v: number;
+}
+
 export interface ProjectViewModel {
     name: string;
     description: string;
@@ -5,7 +22,10 @@ export interface ProjectViewModel {
     tags: string[];
 
     minAcceptableEfficiency: number;
-    criterias: {
-        name: string
-    }[]
+    criterias: Criteria[],
+
+    calculatedData: Value[]
+
+    startTime: Date;
+    endTime: Date | undefined;
 }

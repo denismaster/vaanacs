@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Project } from "./models/project";
+import { Project, Criteria, ConvolutionType, Value } from "./models/project";
 import { Model } from 'mongoose';
 import { CreateProjectDto } from './models/create-project-dto';
 import { UpdateProjectDto } from './models/update-project-dto';
+import { calculateData } from '../core/calculation/calculateData';
 
 @Injectable()
 export class ProjectsService {
@@ -19,8 +20,14 @@ export class ProjectsService {
             _id: projectId
         };
 
+        let project = await this.projectModel.findOne(conditions);
+
+        let calculatedData = calculateData(project);
+
+        let patch = { ...projectPatch, calculatedData: calculatedData}
+
         const updatedProject = await this.projectModel
-            .findOneAndUpdate(conditions, projectPatch, { new: true, useFindAndModify: false });
+            .findOneAndUpdate(conditions, patch, { new: true, useFindAndModify: false });
         return updatedProject;
     }
 

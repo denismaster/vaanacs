@@ -2,6 +2,7 @@ import React, { Component, FC, useContext, useState } from 'react';
 import { Form, Input, Empty, Button, Collapse } from 'antd';
 import { ProjectContext } from '../ProjectView';
 import { AddCriteriaModal } from './AddCriteriaModal';
+import { CriteriaForm } from './CriteriaForm';
 
 export const ProjectCriteriaTab: FC = () => {
     const { project, updateProject } = useContext(ProjectContext);
@@ -23,10 +24,12 @@ export const ProjectCriteriaTab: FC = () => {
             <div style={{ marginBottom: 16 }}>
                 <Button onClick={() => setModalVisible(true)}>Добавить критери</Button>
             </div>
-            <Collapse>
+            <Collapse bordered={false}>
                 {
                     project.criterias.map((c, i) =>
-                        <Collapse.Panel header={c.name} key={i.toString()}></Collapse.Panel>
+                        <Collapse.Panel header={c.name} key={i.toString()}>
+                            <CriteriaForm criteria={c}></CriteriaForm>
+                        </Collapse.Panel>
                     )
                 }
             </Collapse>
