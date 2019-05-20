@@ -10,16 +10,41 @@ export function calculateData(project: Project): Value[] {
     if (!criterias || !criterias.length)
         return [];
 
-    return criterias.reduce((previous, current) => {
-        if (!previous.length) {
-            return calculateCriteria({
-                name: "1",
-                weight: 2,
-                parts: [{ type: 'constant', startTime: 0, endTime: 10, value: 25 },
+    let rnd = Math.random();
+
+
+    criterias = [
+        {
+            name: "1",
+            weight: rnd,
+            parts: [
                 {
-                    type: "quadratic", startTime: 10, k: -0.15, b: 25
-                }]
-            }, measurementCount);
+                    type: "constant",
+                    startTime: 0,
+                    value: 100
+                }
+            ]
+        },
+        {
+            name: "2",
+            weight: 1-rnd,
+            parts: [
+                {
+                    type: "exponent",
+                    startTime: 0,
+                    b: 100,
+                    k: -0.24
+                }
+            ]
         }
-    }, [])
+    ]
+
+    return criterias
+        .map(c => ({ c, data: calculateCriteria(c, measurementCount) }))
+        .reduce((previous: Value[], { c, data }) => {
+            if (!previous || !previous.length) {
+                return calculateCriteria(c, measurementCount).map((el, t) => ({ t, v: el.v * c.weight }))
+            }
+            return previous.map((el, index) => ({ t: index, v: el.v + c.weight * data[index].v }))
+        }, []);
 }
