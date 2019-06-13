@@ -15,10 +15,6 @@ export const ProjectCriteriaTab: FC = () => {
         />
     }
 
-    const handleOnCreate = (data: { name: string }) => {
-        updateProject({ criterias: [...project.criterias, { name: data.name }] })
-    }
-
     return (
         <div>
             <div style={{ marginBottom: 16 }}>
@@ -33,7 +29,7 @@ export const ProjectCriteriaTab: FC = () => {
                     )
                 }
             </Collapse>
-            <AddCriteriaModal onCreate={handleOnCreate} onCancel={() => setModalVisible(false)} visible={modalVisible} />
+            <AddCriteriaModal project={project} onCancel={() => setModalVisible(false)} visible={modalVisible} />
         </div>
     )
 }

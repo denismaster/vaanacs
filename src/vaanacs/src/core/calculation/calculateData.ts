@@ -1,4 +1,4 @@
-import { Project, Value } from "../../projects/models/project";
+import { Project, Value, Criteria } from "../../projects/models/project";
 import { calculateCriteria } from "./calculatePartData";
 import { calculateDuration } from "./calculateDuration";
 
@@ -10,36 +10,9 @@ export function calculateData(project: Project): Value[] {
     if (!criterias || !criterias.length)
         return [];
 
-    let rnd = Math.random();
+    console.log(project.criterias);
 
-
-    criterias = [
-        {
-            name: "1",
-            weight: rnd,
-            parts: [
-                {
-                    type: "constant",
-                    startTime: 0,
-                    value: 100
-                }
-            ]
-        },
-        {
-            name: "2",
-            weight: 1-rnd,
-            parts: [
-                {
-                    type: "exponent",
-                    startTime: 0,
-                    b: 100,
-                    k: -0.24
-                }
-            ]
-        }
-    ]
-
-    return criterias
+    return project.criterias
         .map(c => ({ c, data: calculateCriteria(c, measurementCount) }))
         .reduce((previous: Value[], { c, data }) => {
             if (!previous || !previous.length) {

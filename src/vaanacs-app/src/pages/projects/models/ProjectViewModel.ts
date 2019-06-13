@@ -16,6 +16,7 @@ export interface Value {
 }
 
 export interface ProjectViewModel {
+    _id: string;
     name: string;
     description: string;
     stars: number;
