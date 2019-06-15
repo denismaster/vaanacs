@@ -1,7 +1,12 @@
 
 import * as mongoose from 'mongoose';
 
-let discriminatorOptions = { discriminatorKey: 'type', _id: false };
+let discriminatorOptions = { discriminatorKey: 'type' };
+
+export const ValueSchema = new mongoose.Schema({
+    t: Number,
+    v: Number
+});
 
 export const CriteriaPartSchema = new mongoose.Schema({
     startTime: { type: Number, default: null },
@@ -35,10 +40,9 @@ export const QuadraticCriteriaPart = partsArray.discriminator('quadratic', new m
     b: Number
 }));
 
-export const ValueSchema = new mongoose.Schema({
-    t: Number,
-    v: Number
-});
+export const SplineCriteriaPart = partsArray.discriminator('spline', new mongoose.Schema({
+    points: [ValueSchema]
+}));
 
 export const ProjectSchema = new mongoose.Schema({
     name: String,
@@ -55,5 +59,7 @@ export const ProjectSchema = new mongoose.Schema({
     criterias: [CriteriaSchema],
     convolution: { type: String, default: "additive" },
 
+    extremumPoints: [ValueSchema],
+    roots: [ValueSchema],
     calculatedData: [ValueSchema],
 });

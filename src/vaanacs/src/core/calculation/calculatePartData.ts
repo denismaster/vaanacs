@@ -1,7 +1,8 @@
-import { CriteriaPart } from "../../projects/models/criteria-parts";
+import { CriteriaPart, SplinePart } from "../../projects/models/criteria-parts";
 import { Value, Criteria } from "../../projects/models/project";
 import { start } from "repl";
 import { calculateDuration } from "./calculateDuration";
+import * as interpolator from 'natural-spline-interpolator';
 
 function isPartDefinedAtGivenTime(part: CriteriaPart, time: number): boolean {
     return part.startTime <= time && time <= (part.endTime || Number.MAX_VALUE);
@@ -16,24 +17,48 @@ export function calculateCriteria(criteria: Criteria, measurementCount: number) 
         throw new Error("Invalid criteria parts");
     }
 
+    let spline: (t: number) => number;
+
     if (criteria.parts.length == 1) {
+        console.log(criteria.parts[0])
+
+        if (criteria.parts[0].type === 'spline') {
+            spline = interpolator(zipPointsForSpline(criteria.parts[0] as SplinePart));
+            console.log("spline is:", spline)
+        }
+
         while (t <= measurementCount) {
-            timeSeries.push({ t, v: calculatePartAtTime(criteria.parts[0], t) })
+            if (criteria.parts[0].type === "spline") {
+                timeSeries.push({ t, v: calculatePartAtTime(criteria.parts[0], t, spline) })
+            }
+            else {
+                timeSeries.push({ t, v: calculatePartAtTime(criteria.parts[0], t) })
+            }
             t++;
         }
     }
     else {
-        let parts = [...criteria.parts]
         let i = 0;
         while (t <= measurementCount) {
             let activePart = criteria.parts[i]
 
             if (!activePart) break;
 
+            if (activePart.type === "spline") {
+                let points = zipPointsForSpline(activePart);
+                console.log(points);
+                spline = interpolator(points);
+                console.log("spline is:", spline)
+            }
+
             while (t <= measurementCount && isPartDefinedAtGivenTime(activePart, t)) {
-                timeSeries.push({ t, v: calculatePartAtTime(activePart, t) })
+                if (activePart.type === "spline") {
+                    timeSeries.push({ t, v: calculatePartAtTime(activePart, t, spline) })
+                }
+                else {
+                    timeSeries.push({ t, v: calculatePartAtTime(activePart, t) })
+                }
                 t++;
-                console.log(activePart.type);
             }
 
             i++;
@@ -44,12 +69,23 @@ export function calculateCriteria(criteria: Criteria, measurementCount: number) 
     return timeSeries;
 }
 
-export function calculatePartAtTime(part: CriteriaPart, time: number): number {
+export function zipPointsForSpline(part: SplinePart) {
+    return part.points.map((p) => {
+        return [p.t, p.v]
+    })
+}
+
+export function calculatePartAtTime(part: CriteriaPart, time: number, func?: (t: number) => number): number {
+    if (part.type === "spline" && !func) {
+        throw new Error("Invalid spline");
+    }
+
     switch (part.type) {
         case "constant": return part.value;
         case "linear": return part.b + part.k * (time - part.startTime || 0);
         case "exponent": return part.b * Math.exp(part.k * (time - part.startTime || 0));
         case "quadratic": return part.b - Math.pow(part.k * (time - part.startTime || 0), 2);
+        case "spline": return func(time);
     }
 }
 

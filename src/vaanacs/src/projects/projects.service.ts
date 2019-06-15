@@ -7,6 +7,8 @@ import { UpdateProjectDto } from './models/update-project-dto';
 import { calculateData } from '../core/calculation/calculateData';
 import { CriteriaAddDto } from './models/criteria-add-dto';
 import { CriteriaPart } from './models/criteria-parts';
+import { findExtremumPoints } from 'src/core/calculation/extremum';
+import { findRoots } from 'src/core/calculation/findRoots';
 
 @Injectable()
 export class ProjectsService {
@@ -25,8 +27,10 @@ export class ProjectsService {
         let project = await this.projectModel.findOne(conditions);
 
         let calculatedData = calculateData(project);
+        let extremumPoints = findExtremumPoints(calculatedData);
+        let roots = findRoots(project.minAcceptableEfficiency, calculatedData);
 
-        let patch = { ...projectPatch, calculatedData: calculatedData }
+        let patch = { ...projectPatch, calculatedData: calculatedData, roots, extremumPoints }
 
         const updatedProject = await this.projectModel
             .findOneAndUpdate(conditions, patch, { new: true, useFindAndModify: false });
@@ -73,6 +77,12 @@ export class ProjectsService {
                     b: addCriteria.b
                 });
                 break;
+
+            case "spline":
+                parts.push({
+                    type: addCriteria.type,
+                    points: addCriteria.points
+                })
         }
 
         let criteria: Criteria = {
@@ -81,9 +91,6 @@ export class ProjectsService {
             parts
         }
         
-        console.log(project)
-        console.log(criteria)
-
         let existingCriterias = project.criterias || [];
 
         let patch = { criterias: [...existingCriterias, criteria] }
@@ -92,8 +99,10 @@ export class ProjectsService {
             .findOneAndUpdate(conditions, patch, { new: true, useFindAndModify: false });
 
         let calculatedData = calculateData(updatedProject);
+        let extremumPoints = findExtremumPoints(calculatedData);
+        let roots = findRoots(project.minAcceptableEfficiency, calculatedData);
 
-        let patch2 = { calculatedData }
+        let patch2 = { calculatedData, roots, extremumPoints }
 
         updatedProject = await this.projectModel
             .findOneAndUpdate(conditions, patch2, { new: true, useFindAndModify: false });

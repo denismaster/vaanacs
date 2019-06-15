@@ -1,3 +1,5 @@
+import { Value } from "./project";
+
 export interface ConstantPart {
     type: 'constant',
     startTime?: number;
@@ -29,4 +31,11 @@ export interface QuadraticPart {
     k: number
 }
 
-export type CriteriaPart = ConstantPart | LinearPart | ExponentialPart | QuadraticPart
+export interface SplinePart {
+    type: 'spline',
+    startTime?: number;
+    endTime?: number;
+    points: Value[]
+}
+
+export type CriteriaPart = ConstantPart | LinearPart | ExponentialPart | QuadraticPart | SplinePart

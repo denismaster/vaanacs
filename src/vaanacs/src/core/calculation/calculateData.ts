@@ -10,8 +10,6 @@ export function calculateData(project: Project): Value[] {
     if (!criterias || !criterias.length)
         return [];
 
-    console.log(project.criterias);
-
     return project.criterias
         .map(c => ({ c, data: calculateCriteria(c, measurementCount) }))
         .reduce((previous: Value[], { c, data }) => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, FC } from 'react';
 import { Col, Row, Button, Icon, Skeleton, PageHeader, Card, Collapse, Alert } from 'antd';
 import { Typography } from 'antd';
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps, Redirect } from 'react-router';
 import { EditableTagGroup } from '../../components/EditableTagGroup';
 import { apiUrl, gridGutter } from '../../constants';
 import { notification } from 'antd';
@@ -10,6 +10,7 @@ import { ProjectChart } from './components/ProjectChart';
 import { ProjectParamsCard } from './components/ProjectParams';
 import { updateProjectInDb } from './api/updateProjectInDb';
 import { debounce } from '../../core/debouncePromise';
+import { deleteProject } from './api/deleteProject';
 const { Text, Paragraph } = Typography;
 
 const StyledRow: FC = ({ children }) => <Row gutter={gridGutter} style={{ marginBottom: '16px' }}>{children}</Row>
@@ -33,13 +34,14 @@ interface ProjectViewRouteParams {
 interface ProjectViewProps extends RouteComponentProps<ProjectViewRouteParams> { }
 
 export function ProjectView({ match }: ProjectViewProps) {
-    const userId = match.params.id;
+    const projectId = match.params.id;
 
     const [project, setProject] = useState<ProjectViewModel | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [shouldGoBack, setShouldGoBack] = useState<boolean>(false);
 
     useEffect(() => {
-        fetch(`${apiUrl}/api/projects/${userId}`)
+        fetch(`${apiUrl}/api/projects/${projectId}`)
             .then(results => results.json())
             .then(data => setProject(data))
             .catch(e => notification.error({
@@ -49,7 +51,20 @@ export function ProjectView({ match }: ProjectViewProps) {
             .finally(() => setLoading(false));
     }, []);
 
-    const saveProject = (patch: any, showNotification: boolean = true) => debouncedUpdateProject(patch, userId)
+    
+    if(shouldGoBack){
+        return <Redirect to="/projects"></Redirect>
+    }
+
+    const handleDelete = async ()=> {
+        if(!project) return;
+
+        await deleteProject(projectId);
+
+        setShouldGoBack(true);
+    }
+
+    const saveProject = (patch: any, showNotification: boolean = true) => debouncedUpdateProject(patch, projectId)
         .then(data => setProject(data))
         .then(_ => {
             if (showNotification) {
@@ -83,6 +98,10 @@ export function ProjectView({ match }: ProjectViewProps) {
                                 <Button disabled key="1">
                                     <Icon type="setting" /> Параметры
                                 </Button>,
+                                <Button type="danger" onClick={handleDelete}>
+                                    <Icon type="delete" />
+                                    Удалить
+                                </Button>
                             ]}
                         >
                             <Paragraph editable={{ onChange: (value) => saveProject({ description: value }) }} >{project && project.description}</Paragraph>

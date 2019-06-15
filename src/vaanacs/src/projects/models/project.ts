@@ -29,5 +29,9 @@ export class Project {
   convolution: ConvolutionType;
   criterias: Criteria[];
 
+  selectedCriteria: string;
+
+  extremumPoints: Value[];
+  roots: Value[]
   calculatedData: Value[]
 }

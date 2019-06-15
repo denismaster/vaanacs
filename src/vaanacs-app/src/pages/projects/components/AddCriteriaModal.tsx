@@ -1,12 +1,36 @@
-import React, { useState, FC, useEffect, Component, Ref, ChangeEvent, ReactElement } from 'react';
-import { Modal, Form, Input, notification, Row, Col, Slider, InputNumber, Select, Upload, Button, Icon } from 'antd';
+import React, { useState, FC, ReactElement } from 'react';
+import { Modal, Form, Input, Slider, Select, Upload, Button, Icon } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { ProjectViewModel } from '../models/ProjectViewModel';
 import { CriteriaAddModel } from '../models/CriteriaAddModel';
 import request from 'request-promise'
 import { apiUrl } from '../../../constants';
+import { UploadFile } from 'antd/lib/upload/interface';
 
-async function createCriteria(project: ProjectViewModel,criteriaModel:CriteriaAddModel) {
+import axios from 'axios';
+
+async function createCriteria(project: ProjectViewModel, criteriaModel: CriteriaAddModel, fileList: UploadFile[]) {
+
+    if (criteriaModel.type === "spline") {
+        let formData = new FormData();
+
+        formData.append('type', criteriaModel.type);
+        formData.append('name', criteriaModel.name)
+        formData.append('weight', criteriaModel.weight.toString());
+        fileList.forEach(file => {
+            formData.append('file', file as any);
+        });
+
+        return await axios.post(`${apiUrl}/api/projects/${project._id}/criterias`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
+    }
+
     return await request({
         method: 'POST',
         uri: `${apiUrl}/api/projects/${project._id}/criterias`,
@@ -28,8 +52,9 @@ interface AddCriteriaModalProps extends FormComponentProps {
     onCancel?: () => void;
 }
 
-const AddCriteriaModalFC: FC<AddCriteriaModalProps> = ({ visible,project, onCancel, form }) => {
+const AddCriteriaModalFC: FC<AddCriteriaModalProps> = ({ visible, project, onCancel, form }) => {
     const [loading, setLoading] = useState(false);
+    const [fileList, setFileList] = useState<UploadFile[]>([]);
 
     const [criteriaType, setCriteriaType] = useState<CriteriaType>("constant");
 
@@ -48,15 +73,38 @@ const AddCriteriaModalFC: FC<AddCriteriaModalProps> = ({ visible,project, onCanc
             form.resetFields();
             setLoading(true);
 
-            let criteria = { type: criteriaType, ...values}
+            let criteria = { type: criteriaType, ...values }
 
-            await createCriteria(project,criteria);
+            await createCriteria(project, criteria, fileList);
             setLoading(false);
             onCancel && onCancel();
         });
     }
 
     const { getFieldDecorator } = form;
+
+    const fileUploadProps = {
+        onRemove: (file: UploadFile) => {
+            const index = fileList.indexOf(file);
+            const newFileList = fileList.slice();
+            newFileList.splice(index, 1);
+            setFileList(newFileList);
+        },
+        beforeUpload: (file: UploadFile) => {
+            setFileList([...fileList, file]);
+            return false;
+        },
+        fileList,
+    };
+
+    let getValueFromEvent = function (e: any): any {
+        if (!e || !e.fileList) {
+            return e;
+        }
+
+        const { fileList } = e;
+        return fileList;
+    }
 
     let formControls: ReactElement | null = null;
 
@@ -91,11 +139,12 @@ const AddCriteriaModalFC: FC<AddCriteriaModalProps> = ({ visible,project, onCanc
         </div>;
             break;
 
-        case "spline": formControls = <Form.Item label="Файл с данными" extra="data.csv">
+        case "spline": formControls = <Form.Item label="Файл с данными">
             {getFieldDecorator('data', {
                 valuePropName: 'fileList',
+                getValueFromEvent
             })(
-                <Upload name="data" beforeUpload={()=>false}>
+                <Upload {...fileUploadProps}>
                     <Button>
                         <Icon type="upload" /> Загрузить...
                     </Button>
@@ -104,6 +153,8 @@ const AddCriteriaModalFC: FC<AddCriteriaModalProps> = ({ visible,project, onCanc
         </Form.Item>;
             break;
     }
+
+
 
     return (
         <Modal
@@ -148,8 +199,6 @@ const AddCriteriaModalFC: FC<AddCriteriaModalProps> = ({ visible,project, onCanc
                             <Select.Option value="exponent">Экспоненциальный</Select.Option>
                             <Select.Option value="quadratic">Квадратичный</Select.Option>
                             <Select.Option value="spline">Набор данных</Select.Option>
-                            {/* <Select.Option value="spline">Сплайн</Select.Option>
-                            <Select.Option value="webhook">Webhook</Select.Option> */}
                         </Select>
                     )}
                 </Form.Item>

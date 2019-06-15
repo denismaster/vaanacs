@@ -1,3 +1,5 @@
+import { UploadFile } from "antd/lib/upload/interface";
+
 export interface Value {
     t: number;
     v: number;
@@ -38,7 +40,7 @@ export interface SplineCriteriaAddDto {
     type: "spline"
     name: string,
     weight: number;
-    points: Value[]
+    data: UploadFile
 }
 
 export type CriteriaAddModel = ConstantCriteriaAddDto
