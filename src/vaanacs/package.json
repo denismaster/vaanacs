@@ -30,7 +30,7 @@
     "csv": "^5.1.1",
     "csv-parser": "^2.3.0",
     "mathjs": "^6.0.2",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "mongoose": "^5.5.4",
     "natural-spline-interpolator": "^1.0.2",
     "reflect-metadata": "^0.1.12",
